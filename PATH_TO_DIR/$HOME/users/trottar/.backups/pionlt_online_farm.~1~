@@ -1,0 +1,3 @@
+REPLAYPATH="/group/c-pionlt/online_analysis/hallc_replay_lt"
+OUTPATH = "%/group/c-pionlt/online_analysis/hallc_replay_lt/UTIL_PION/OUTPUT/Analysis/PionLT"
+ROOTPATH = "/group/c-pionlt/online_analysis/hallc_replay_lt/UTIL_PION/ROOTfiles/Analysis/"
