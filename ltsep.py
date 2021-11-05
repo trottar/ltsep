@@ -2,45 +2,38 @@
 #
 # Description:
 # ================================================================
-# Time-stamp: "2021-11-03 04:32:52 trottar"
+# Time-stamp: "2021-11-05 00:31:50 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
 #
 # Copyright (c) trottar
 #
-        
-class Branch(dict):
-    '''
-    This class, with its findBranch method, will grab the leaves in a branch using uproot package. This takes the tree as an input.
-    '''
-
-    def __init__(self,inputTree):
-        self.inputTree = inputTree
-
-    def findBranch(self,inputBranch, inputLeaf):
-        tree = self.inputTree
-        branch = tree.array(inputBranch)
-        branch  = list(zip(*branch)) # Match elements to proper leaves
-        leafList = tree[inputBranch].interpretation.fromdtype.descr
-        i=0
-        for name,typ in leafList:
-            if name == inputLeaf:
-                leaf = name
-                leafVal = i
-                break
-            i+=1
-        leafHist = branch[leafVal]
-
-        return np.array(leafHist)
 
 class Root():
     '''    
+    Root()
+
+    ----------------------------------------------------------------------------------------------
+
+    # Not required for applying cuts, but required for converting back to root files
+    r = klt.Root()
+
+    ----------------------------------------------------------------------------------------------
+
     This class is for converting files into root files after the analysis steps
     '''
 
-    # Save arrays,lists,etc. from csv to root file as histograms
     def csv2root(self,inputDict,rootName):
+        '''
+        csv2root(self,inputDict,rootName)
+                      |         |
+                      |         --> rootName: Output root file name
+                      --> inputDict: Input dictionary with csv data to be converted to root
+
+        ----------------------------------------------------------------------------------------------
+        Converts csv file to root file. Save arrays,lists,etc. from csv to root file as histograms
+        '''
         try:
             tmp = ""
             hist_key = []*len(inputDict)
@@ -63,24 +56,49 @@ class Root():
         except TypeError:
             print("\nERROR 1: Only current accepting 1D array/list values\n")
 
-class Equation():
-    '''            
+class Equations():
+    '''        
+    Equations()
+
+    ----------------------------------------------------------------------------------------------
+    
     This class stores a variety of equations often used in the KaonLT analysis procedure
     '''
 
-    # Define missing mass calculation
     def missmass():
+        '''
+        missmass()
+
+        ----------------------------------------------------------------------------------------------
+
+        Define missing mass calculation. !!! Not currently implimented !!!
+        '''
         print("missmass")
 
 class Misc():
     '''
-    This is the most extensive class of the kaonlt package. This class will perform many required tasks
-    for doing in depth analysis in python. This class does not require, but will use the pyDict class to
-    apply cuts. Set the dictionary to None if no cuts are required.
+    Misc()
+
+    ----------------------------------------------------------------------------------------------
+
+    Current functions...
+            - progressBar
+
+    ----------------------------------------------------------------------------------------------
+
+    Class of miscellaneous methods
     '''
     
-    def progressBar(self,value, endvalue, bar_length):
+    def progressBar(self,value, endvalue, bar_length=50):
         '''
+        progressBar(self,value, endvalue, bar_length=50)
+                         |      |         |
+                         |      |         --> bar_length: Length of bar to output to terminal (default = 50)
+                         |      --> endvalue: End of loop value - 1
+                         --> value: Iteration value
+                        
+        ----------------------------------------------------------------------------------------------
+
         A simple progress bar to use in loops
         '''
 

@@ -3,16 +3,17 @@
 #
 # Description:
 # ================================================================
-# Time-stamp: "2021-11-02 05:34:53 trottar"
+# Time-stamp: "2021-11-05 00:31:39 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
 #
 # Copyright (c) trottar
 #
-from .ltsep import Branch, Root, Equation
+from .ltsep import Root, Equations, Misc
 from .cut import SetCuts
 from .pathing import SetPath
+from .help import Help
 
 __version__ = '2.0.0'
 __author__ = 'trottar'
