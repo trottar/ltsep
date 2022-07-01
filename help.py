@@ -3,7 +3,7 @@
 #
 # Description: Just calls help functions for various methods to help users
 # ================================================================
-# Time-stamp: "2021-11-05 03:56:24 trottar"
+# Time-stamp: "2022-06-30 02:35:57 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
@@ -58,47 +58,200 @@ class Help():
         rather choose which paths are being used in your specific string. Make sure all references
         to UTIL_PION or UTIL_KAONLT are defined using UTILPATH (or any other useful path listed below)
         ----------------------------------------------------------------------------------------------
-
-        ################################################################################################################################################
+        ##############################################################################################
         \'''
-        ltsep package import and pathing definitions
-        \'''
-
-        import os
-        import ltsep as lt
-
-        # os.path.realpath(__file__) is your current directory path
-        # This will grab the pathing for these variables based off the files in PATH_TO_DIR
-        HCANAPATH=lt.SetPath(os.path.realpath(__file__)).getPath("HCANAPATH")
-        REPLAYPATH=lt.SetPath(os.path.realpath(__file__)).getPath("REPLAYPATH")
-        UTILPATH=lt.SetPath(os.path.realpath(__file__)).getPath("UTILPATH")
-        PACKAGEPATH=lt.SetPath(os.path.realpath(__file__)).getPath("PACKAGEPATH")
-        OUTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("OUTPATH")
-        ROOTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("ROOTPATH")
-        REPORTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("REPORTPATH")
-        CUTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("CUTPATH")
-        PARAMPATH=lt.SetPath(os.path.realpath(__file__)).getPath("PARAMPATH")
-        SCRIPTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("SCRIPTPATH")
-        ANATYPE=lt.SetPath(os.path.realpath(__file__)).getPath("ANATYPE")
-        USER=lt.SetPath(os.path.realpath(__file__)).getPath("USER")
-        HOST=lt.SetPath(os.path.realpath(__file__)).getPath("HOST")
-
-        ################################################################################################################################################
-
-        print("Running as %s on %s, hallc_replay_lt path assumed as %s" % (USER, HOST, REPLAYPATH))
-
-        ################################################################################################################################################
-        \'''
-        Check that root/output paths and files exist for use
+        Define pathing only
         \'''
 
-        # Construct the name of the rootfile based upon the info we provided
-        OUTPATH = UTILPATH+"/OUTPUT/Analysis/%sLT" % ANATYPE        # Output folder location
-        rootName = UTILPATH+"/ROOTfiles/Analysis/Lumi/%s_%s_%s.root" % (ROOTPrefix,runNum,MaxEvent)     # Input file location and variables taking
-        print ("Attempting to process %s" %(rootName))
-        lt.SetPath(os.path.realpath(__file__)).checkDir(OUTPATH)
-        lt.SetPath(os.path.realpath(__file__)).checkFile(rootName)
-        print("Output path checks out, outputting to %s" % (OUTPATH))
+        # Import package for cuts
+        from ltsep import Root
+
+        lt=Root(os.path.realpath(__file__))
+
+        # Add this to all files for more dynamic pathing
+        VOLATILEPATH=lt.VOLATILEPATH
+        ANALYSISPATH=lt.ANALYSISPATH
+        HCANAPATH=lt.HCANAPATH
+        REPLAYPATH=lt.REPLAYPATH
+        UTILPATH=lt.UTILPATH
+        PACKAGEPATH=lt.PACKAGEPATH
+        OUTPATH=lt.OUTPATH
+        ROOTPATH=lt.ROOTPATH
+        REPORTPATH=lt.REPORTPATH
+        CUTPATH=lt.CUTPATH
+        PARAMPATH=lt.PARAMPATH
+        SCRIPTPATH=lt.SCRIPTPATH
+        SIMCPATH=lt.SIMCPATH
+        ANATYPE=lt.ANATYPE
+        USER=lt.USER
+        HOST=lt.HOST
+        # Note the OUTPATH is not defined unless RunType argument is given, see below
+
+        # If you wish to explicitly define root branches then do the following...
+        import uproot as up
+        tree = up.open("<ROOT_FILE_NAME>")["<ROOT_TREE_NAME>"]
+        # Convert root leaf to array with uproot
+        branch_name  = tree.array("<ROOT_BRANCH_NAME>") # The periods are replaced with underscores
+
+        ##############################################################################################
+        \'''
+        Define pathing with OUTPATH 
+        \'''
+
+        # Import package for cuts
+        from ltsep import Root
+
+        lt=Root(os.path.realpath(__file__), "<Run Type (HeePCoin, HeePSing_<spec>, SimcCoin, SimcSing, Prod, Plot_<Type>, None)>")
+
+        # Add this to all files for more dynamic pathing
+        VOLATILEPATH=lt.VOLATILEPATH
+        ANALYSISPATH=lt.ANALYSISPATH
+        HCANAPATH=lt.HCANAPATH
+        REPLAYPATH=lt.REPLAYPATH
+        UTILPATH=lt.UTILPATH
+        PACKAGEPATH=lt.PACKAGEPATH
+        OUTPATH=lt.OUTPATH
+        ROOTPATH=lt.ROOTPATH
+        REPORTPATH=lt.REPORTPATH
+        CUTPATH=lt.CUTPATH
+        PARAMPATH=lt.PARAMPATH
+        SCRIPTPATH=lt.SCRIPTPATH
+        SIMCPATH=lt.SIMCPATH
+        ANATYPE=lt.ANATYPE
+        USER=lt.USER
+        HOST=lt.HOST
+        OUTPATH=lt.OUTPATH
+
+        # If you wish to explicitly define root branches then do the following...
+        import uproot as up
+        tree = up.open("<ROOT_FILE_NAME>")["<ROOT_TREE_NAME>"]
+        # Convert root leaf to array with uproot
+        branch_name  = tree.array("<ROOT_BRANCH_NAME>") # The periods are replaced with underscores
+
+        ##############################################################################################
+        \'''
+        Define pathing with OUTPATH and root branches
+        \'''
+
+        # Import package for cuts
+        from ltsep import Root
+
+        # Note that now a ROOTPrefix, runNum, and MaxEvent is required
+        lt=Root(os.path.realpath(__file__), "<Run Type (HeePCoin, HeePSing_<spec>, SimcCoin, SimcSing, Prod, Plot_<Type>, None)>", ROOTPrefix, runNum, MaxEvent)
+
+        # Add this to all files for more dynamic pathing
+        VOLATILEPATH=lt.VOLATILEPATH
+        ANALYSISPATH=lt.ANALYSISPATH
+        HCANAPATH=lt.HCANAPATH
+        REPLAYPATH=lt.REPLAYPATH
+        UTILPATH=lt.UTILPATH
+        PACKAGEPATH=lt.PACKAGEPATH
+        OUTPATH=lt.OUTPATH
+        ROOTPATH=lt.ROOTPATH
+        REPORTPATH=lt.REPORTPATH
+        CUTPATH=lt.CUTPATH
+        PARAMPATH=lt.PARAMPATH
+        SCRIPTPATH=lt.SCRIPTPATH
+        SIMCPATH=lt.SIMCPATH
+        ANATYPE=lt.ANATYPE
+        USER=lt.USER
+        HOST=lt.HOST
+        OUTPATH=lt.OUTPATH
+
+        # This will allow access to a dictionary of root branches depending on the RunType given
+        # Note in this example the cut object, c, is only useful for advanced usage. See below for general use.
+        # Note the dictionary of cuts as strings, strDict, is a None object as there are no cuts defined.
+        proc_root = lt.setup_ana()
+        c = proc_root[0] # Cut object
+        tree = proc_root[1] # Dictionary of branches
+        strDict = proc_root[2] # Dictionary of cuts as strings
+
+        # Call root branches with the dictionary key
+        tree['<ROOT_BRANCH_NAME>']
+
+        ##############################################################################################
+        \'''
+        Define pathing with OUTPATH, root branches, and set up cuts
+        \'''
+
+        # Import package for cuts
+        from ltsep import Root
+
+        # ---> If multple run type files are required then define a new run type file altogether. Do not try to 
+        # chain run type files. It can be done, but is computationally wasteful and pointless.
+        cut_f = "<path_to_run_type_cut>"
+
+        cuts = ["<runTypeCut1>","<runTypeCut2>",<etc>,...]
+
+        lt=Root(os.path.realpath(__file__), "<Run Type (HeePCoin, HeePSing_<spec>, SimcCoin, SimcSing, Prod, Plot_<Type>, None)>", ROOTPrefix, runNum, MaxEvent, cut_f, cuts)
+
+        # Add this to all files for more dynamic pathing
+        VOLATILEPATH=lt.VOLATILEPATH
+        ANALYSISPATH=lt.ANALYSISPATH
+        HCANAPATH=lt.HCANAPATH
+        REPLAYPATH=lt.REPLAYPATH
+        UTILPATH=lt.UTILPATH
+        PACKAGEPATH=lt.PACKAGEPATH
+        OUTPATH=lt.OUTPATH
+        ROOTPATH=lt.ROOTPATH
+        REPORTPATH=lt.REPORTPATH
+        CUTPATH=lt.CUTPATH
+        PARAMPATH=lt.PARAMPATH
+        SCRIPTPATH=lt.SCRIPTPATH
+        SIMCPATH=lt.SIMCPATH
+        ANATYPE=lt.ANATYPE
+        USER=lt.USER
+        HOST=lt.HOST
+        OUTPATH=lt.OUTPATH
+
+        # Arrays are defined in ltsep, no need to redefine.
+        # cut_f, cuts are optional flags. If you don't have cuts just leave these blank and the runtype root branches will be accessible, see above.
+        # ROOTPrefix is also an optional flag, see above. This means your branches will need to be defined explicitly, see below.
+        proc_root = lt.setup_ana()
+        c = proc_root[0] # Cut object
+        tree = proc_root[1] # Dictionary of branches
+        strDict = proc_root[2] # Dictionary of cuts as 
+
+        # Call root branches with the dictionary key
+        tree['<ROOT_BRANCH_NAME>']
+
+        # To apply cuts to root branches...
+        # c is the cut object used to grab instance of add_cut
+        # add_cut() applies the cut, i.e. "<runTypeCut#>", to the branch defined, i.e. tree['<ROOT_BRANCH_NAME>']
+        c.add_cut(tree['<ROOT_BRANCH_NAME>'], "<runTypeCut#>")
+
+        ##############################################################################################
+        \'''
+        Define bash dynamic pathing
+        \'''
+
+        # Runs script in the ltsep python package that grabs current path enviroment
+        if [[ ${HOSTNAME} = *"cdaq"* ]]; then
+            PATHFILE_INFO=`python3 /home/cdaq/pionLT-2021/hallc_replay_lt/UTIL_PION/bin/python/ltsep/scripts/getPathDict.py $PWD` # The output of this python script is just a comma separated string
+        elif [[ "${HOSTNAME}" = *"farm"* ]]; then
+            PATHFILE_INFO=`python3 /u/home/${USER}/.local/lib/python3.4/site-packages/ltsep/scripts/getPathDict.py $PWD` # The output of this python script is just a comma separated string
+        fi
+
+        # Split the string we get to individual variables, easier for printing and use later
+        VOLATILEPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f1` # Cut the string on , delimitter, select field (f) 1, set variable to output of command
+        ANALYSISPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f2`
+        HCANAPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f3`
+        REPLAYPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f4`
+        UTILPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f5`
+        PACKAGEPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f6`
+        OUTPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f7`
+        ROOTPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f8`
+        REPORTPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f9`
+        CUTPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f10`
+        PARAMPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f11`
+        SCRIPTPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f12`
+        ANATYPE=`echo ${PATHFILE_INFO} | cut -d ','  -f13`
+        USER=`echo ${PATHFILE_INFO} | cut -d ','  -f14`
+        HOST=`echo ${PATHFILE_INFO} | cut -d ','  -f15`
+        SIMCPATH=`echo ${PATHFILE_INFO} | cut -d ','  -f16`
+
+        ----------------------------------------------------------------------------------------------
+
         '''
         print(path_setup.__doc__)
 
@@ -108,56 +261,59 @@ class Help():
         ----------------------------------------------------------------------------------------------
         Make sure you have the following in your script...
         ----------------------------------------------------------------------------------------------
-
-        import uproot as up
-        import ltsep as lt
-
-        # ----> Add pathing variables as well (see lt.Help.path_setup() for more info)
-
-        # ---> Add r = klt.Root() for converting back to root files (see lt.Help.info(lt.Root) for more info)
-
-        # Convert root leaf to array with uproot
-        # Array name must match what is defined in DB/CUTS/general/
-        leaf_name  = tree.array("leaf.name") # The periods are replaced with underscores
-
-        ################################################################################################################################################
+        ##############################################################################################
         \'''
-        Define and set up cuts
+        Define pathing with OUTPATH, root branches, and set up cuts
         \'''
 
-        fout = "<path_to_run_type_cut>"
-
-        cuts = ["runTypeCut1","runTypeCut2",<etc>,...]
-
-        def make_cutDict(cuts,fout,runNum,CURRENT_ENV):
-            ''
-            This method calls several methods in kaonlt package. It is required to create properly formated
-            dictionaries. The evaluation must be in the analysis script because the analysis variables (i.e. the
-            leaves of interest) are not defined in the kaonlt package. This makes the system more flexible
-            overall, but a bit more cumbersome in the analysis script. Perhaps one day a better solution will be
-            implimented.
-            ''
-
-            # read in cuts file and make dictionary
-            importDict = lt.SetCuts(CURRENT_ENV).importDict(cuts,fout,runNum)
-            for i,cut in enumerate(cuts):
-                x = lt.SetCuts(CURRENT_ENV,importDict).booleanDict(cut)
-                print("\\n%s" % cut)
-                print(x, "\\n")
-                if i == 0:
-                    inputDict = {}
-                cutDict = lt.SetCuts(CURRENT_ENV,importDict).readDict(cut,inputDict)
-                for j,val in enumerate(x):
-                    cutDict = lt.SetCuts(CURRENT_ENV,importDict).evalDict(cut,eval(x[j]),cutDict)
-            return lt.SetCuts(CURRENT_ENV,cutDict)
-
-        c = make_cutDict(cuts,fout,runNum,os.path.realpath(__file__))
+        # Import package for cuts
+        from ltsep import Root
 
         # ---> If multple run type files are required then define a new run type file altogether. Do not try to 
         # chain run type files. It can be done, but is computationally wasteful and pointless.
+        cut_f = "<path_to_run_type_cut>"
 
-        # To apply cuts to array...
-        c.add_cut(array,"runTypeCut")
+        cuts = ["<runTypeCut1>","<runTypeCut2>",<etc>,...]
+
+        lt=Root(os.path.realpath(__file__), "<Run Type (HeePCoin, HeePSing_<spec>, SimcCoin, SimcSing, Prod, Plot_<Type>, None)>", ROOTPrefix, runNum, MaxEvent, cut_f, cuts)
+
+        # Add this to all files for more dynamic pathing
+        VOLATILEPATH=lt.VOLATILEPATH
+        ANALYSISPATH=lt.ANALYSISPATH
+        HCANAPATH=lt.HCANAPATH
+        REPLAYPATH=lt.REPLAYPATH
+        UTILPATH=lt.UTILPATH
+        PACKAGEPATH=lt.PACKAGEPATH
+        OUTPATH=lt.OUTPATH
+        ROOTPATH=lt.ROOTPATH
+        REPORTPATH=lt.REPORTPATH
+        CUTPATH=lt.CUTPATH
+        PARAMPATH=lt.PARAMPATH
+        SCRIPTPATH=lt.SCRIPTPATH
+        SIMCPATH=lt.SIMCPATH
+        ANATYPE=lt.ANATYPE
+        USER=lt.USER
+        HOST=lt.HOST
+        OUTPATH=lt.OUTPATH
+
+        # Arrays are defined in ltsep, no need to redefine.
+        # cut_f, cuts are optional flags. If you don't have cuts just leave these blank and the runtype root branches will be accessible, see above.
+        # ROOTPrefix is also an optional flag, see above. This means your branches will need to be defined explicitly, see below.
+        proc_root = lt.setup_ana()
+        c = proc_root[0] # Cut object
+        tree = proc_root[1] # Dictionary of branches
+        strDict = proc_root[2] # Dictionary of cuts as 
+
+        # Call root branches with the dictionary key
+        tree['<ROOT_BRANCH_NAME>']
+
+        # To apply cuts to root branches...
+        # c is the cut object used to grab instance of add_cut
+        # add_cut() applies the cut, i.e. "<runTypeCut#>", to the branch defined, i.e. tree['<ROOT_BRANCH_NAME>']
+        c.add_cut(tree['<ROOT_BRANCH_NAME>'], "<runTypeCut#>")
+        ##############################################################################################
+        ----------------------------------------------------------------------------------------------
+
         '''
         print(cut_setup.__doc__)
 

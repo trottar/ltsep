@@ -4,7 +4,7 @@
 # Description: This package will perform many tasks required for l-t separation physics analysis 
 # Analysis script required format for applying cuts.
 # ================================================================
-# Time-stamp: "2021-11-05 03:57:06 trottar"
+# Time-stamp: "2022-06-27 19:32:00 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
@@ -23,62 +23,11 @@ class SetCuts():
     SetCuts()
 
     ----------------------------------------------------------------------------------------------
-    import uproot as up
-    import ltsep as lt
 
-    # ----> Add pathing variables as well (see lt.Help.path_setup() for more info)
-    
-    # ---> Add r = klt.Root() for converting back to root files (see lt.Help.info(lt.Root) for more info)
-
-    # Convert root leaf to array with uproot
-    # Array name must match what is defined in DB/CUTS/general/
-    leaf_name  = tree.array("leaf.name") # The periods are replaced with underscores
-
-    ################################################################################################################################################
-    \'''
-    Define and set up cuts
-    \'''
-
-    fout = "<path_to_run_type_cut>"
-
-    cuts = ["runTypeCut1","runTypeCut2",<etc>,...]
-
-    def make_cutDict(cuts,fout,runNum,CURRENT_ENV):
-        ''
-        This method calls several methods in kaonlt package. It is required to create properly formated
-        dictionaries. The evaluation must be in the analysis script because the analysis variables (i.e. the
-        leaves of interest) are not defined in the kaonlt package. This makes the system more flexible
-        overall, but a bit more cumbersome in the analysis script. Perhaps one day a better solution will be
-        implimented.
-        ''
-
-        # read in cuts file and make dictionary
-        importDict = lt.SetCuts(CURRENT_ENV).importDict(cuts,fout,runNum)
-        for i,cut in enumerate(cuts):
-            x = lt.SetCuts(CURRENT_ENV,importDict).booleanDict(cut)
-            print("\\n%s" % cut)
-            print(x, "\\n")
-            if i == 0:
-                inputDict = {}
-            cutDict = lt.SetCuts(CURRENT_ENV,importDict).readDict(cut,inputDict)
-            for j,val in enumerate(x):
-                cutDict = lt.SetCuts(CURRENT_ENV,importDict).evalDict(cut,eval(x[j]),cutDict)
-        return lt.SetCuts(CURRENT_ENV,cutDict)
-
-    c = make_cutDict(cuts,fout,runNum,os.path.realpath(__file__))
-
-    # ---> If multple run type files are required then define a new run type file altogether. Do not try to 
-    # chain run type files. It can be done, but is computationally wasteful and pointless.
-
-    # To apply cuts to array...
-    c.add_cut(array,"runTypeCut")
-    ----------------------------------------------------------------------------------------------
-
-    This is the most extensive class of the kaonlt package. This class will perform many required tasks
-    for doing in depth analysis in python. This package will set up the cut dictionary as well as 
+    This class will set up the cut dictionary as well as 
     apply cuts to arrays.
     '''
-
+    
     def __init__(self, CURRENT_ENV,cutDict=None):
         '''
         __init__(self,CURRENT_ENV,cutDict=None)
@@ -88,11 +37,33 @@ class SetCuts():
 
         ----------------------------------------------------------------------------------------------
         
-        Initialization of class takes the current enviroment path and an optional dictionary as input
+        Constructor of class takes the current enviroment path and an optional dictionary as input
         '''
         self.cutDict = cutDict
         self.REPLAYPATH = SetPath(CURRENT_ENV).getPath("REPLAYPATH")
         self.UTILPATH = SetPath(CURRENT_ENV).getPath("UTILPATH")
+
+    def __str__(self):
+        '''
+        __str__(self)
+
+        ----------------------------------------------------------------------------------------------
+
+        String representation of class if called as string (eg print(SetCuts))
+        '''
+
+        return "{REPLAYPATH : {self.REPLAYPATH}, UTILPATH : {self.UTILPATH}], cutDict : {self.cutDict}}"
+
+    def __repr__(self):
+        '''
+        __repr__(self)
+
+        ----------------------------------------------------------------------------------------------
+
+        String representation of class if called as is (eg SetCuts)
+        '''
+
+        return "SetCuts([{self.REPLAYPATH},{self.UTILPATH}],{self.cutDict})"
 
     def setbin(self,arr,numbin,xmin=None,xmax=None):
         '''
@@ -121,7 +92,8 @@ class SetCuts():
 
         return bins
 
-    def fixBin(self,arr,low,high):
+    @staticmethod
+    def fixBin(arr,low,high):
         '''
         fixBin(self,arr,low,high)
                     |    |   |
@@ -136,45 +108,6 @@ class SetCuts():
         '''
 
         return arr[(arr > low) & (arr < high)]
-
-    def cut_RF(self,runNum,MaxEvent):
-        '''
-        cut_RF(self,runNum,MaxEvent)
-                    |      |
-                    |      --> MaxEvent: Max number of events
-                    --> runNum: Run number
-
-        ----------------------------------------------------------------------------------------------
-        Cut on RF timing...depreciated????
-        '''
-        TimingCutFile = self.UTILPATH+'/DB/PARAM/Timing_Parameters.csv'
-        # rootName = "/lustre19/expphy/volatile/hallc/c-kaonlt/sjdkay/ROOTfiles/Proton_Analysis/Pass3/Proton_coin_replay_production_%s_%s.root" % (self.REPLAYPATH, runNum, MaxEvent)
-        rootName = self.UTILPATH+"/ROOTfiles/coin_replay_Full_Lumi_%s_%s.root" % (runNum,MaxEvent)
-        e_tree = up.open(rootName)["T"]
-        TimingCutf = open(TimingCutFile)
-        PromptPeak = [0, 0, 0]
-        linenum = 0 # Count line number we're on
-        TempPar = -1 # To check later
-        for line in TimingCutf: # Read all lines in the cut file
-            linenum += 1 # Add one to line number at start of loop
-            if(linenum > 1): # Skip first line
-                line = line.partition('#')[0] # Treat anything after a # as a comment and ignore it
-                line = line.rstrip()
-                array = line.split(",") # Convert line into an array, anything after a comma is a new entry
-                if(int(runNum) in range (int(array[0]), int(array[1])+1)): # Check if run number for file is within any of the ranges specified in the cut file
-                    TempPar += 2 # If run number is in range, set to non -1 value
-                    BunchSpacing = float(array[2]) # Bunch spacing in ns
-                    RF_Offset = float(array[9]) # Offset for RF timing cut
-        TimingCutf.close() # After scanning all lines in file, close file
-        if(TempPar == -1): # If value is still -1, run number provided didn't match any ranges specified so exit
-            print("!!!!! ERROR !!!!!\n Run number specified does not fall within a set of runs for which cuts are defined in %s\n!!!!! ERROR !!!!!" % TimingCutFile)
-            sys.exit(3)
-        elif(TempPar > 1):
-            print("!!! WARNING!!! Run number was found within the range of two (or more) line entries of %s !!! WARNING !!!" % TimingCutFile)
-            print("The last matching entry will be treated as the input, you should ensure this is what you want")
-        P_RF_tdcTime = e_tree.array("T.coin.pRF_tdcTime")
-        P_hod_fpHitsTime = e_tree.array("P.hod.fpHitsTime")
-        RF_CutDist = np.array([ ((RFTime-StartTime + RF_Offset)%(BunchSpacing)) for (RFTime, StartTime) in zip(P_RF_tdcTime, P_hod_fpHitsTime)]) # In python x % y is taking the modulo y of x
 
     def readDict(self,cut,inputDict=None):
         '''
@@ -302,7 +235,6 @@ class SetCuts():
                         else:
                             # Break down the cut to be removed to find specific leaf to be subtracted from
                             # dictionary
-                            #minuscut = gencut[0]
                             minuscut = val
                             if len(minuscut) == 3:
                                 cutminus = minuscut[1]
@@ -327,7 +259,6 @@ class SetCuts():
                                         cutDict[typName] = cutDict[typName].replace(remove,"")
                 f.close()
             return gencut
-
 
         def flatten(minus_list):
             '''
@@ -405,7 +336,7 @@ class SetCuts():
             print("\n\n")
         return cutDict
 
-    def search_DB(self,cuts,runNum,DEBUG):
+    def search_DB(self, cuts,runNum,DEBUG):
         '''
         search_DB(self,cuts,runNum,DEBUG)
                        |    |      |
@@ -471,7 +402,6 @@ class SetCuts():
                 cut = cut
             db_cuts.append(cut.strip())
 
-        # Returns true if number is in string
         def has_numbers(inputString):
             '''
             has_numbers(inputString)
@@ -480,23 +410,23 @@ class SetCuts():
 
             ----------------------------------------------------------------------------------------------
             
-            Check if string contains a number
+            Check if string contains a number. Returns true if number is in string.
             '''
             return any(char.isdigit() for char in inputString)
             
         for cut in cuts:
             # Find which cut is being called
-            if "accept" in cut:
+            if "accept." in cut:
                 grabCutData("accept",cut)
-            elif "track" in cut:
+            elif "track." in cut:
                 grabCutData("track",cut)
-            elif "CT" in cut:
+            elif "CT." in cut:
                 grabCutData("CT",cut)
-            elif "pid" in cut:
+            elif "pid." in cut:
                 grabCutData("pid",cut)
-            elif "misc" in cut:
+            elif "misc." in cut:
                 grabCutData("misc",cut)          
-            elif "current" in cut:
+            elif "current." in cut:
                 grabCutData("current",cut)
             elif has_numbers(cut):
                 grabCutData("num",cut)
@@ -523,10 +453,32 @@ class SetCuts():
         subDict = inputDict[cut]
         subDict = subDict.split(",")
         cut_arr = [evt for evt in subDict]
-        cut_arr = list(filter(None,cut_arr))
+        cut_arr = list(filter(None,cut_arr)) # Filter out blank string values (ie where cuts were removed)
         return cut_arr
 
-    def add_cut(self,arr, cut):
+    def apply_cut(self,arr, cut):
+        '''
+        apply_cut(self,arr, cut)
+                     |    |
+                     |    --> cut: Run type cut name to impliment to array 
+                     --> arr: Input array to be cut
+
+        ----------------------------------------------------------------------------------------------
+
+        Creates the string of cuts to later be evaluated and then converted to boolean array.
+        '''
+
+        applycut = "arr["
+        inputDict = self.cutDict
+        subDict = inputDict[cut]
+        for i,(key,val) in enumerate(subDict.items()):
+            if i == len(subDict)-1:
+                applycut += 'self.cut("%s","%s")]' % (key,cut)
+            else:
+                applycut += 'self.cut("%s","%s") & ' % (key,cut)
+        return applycut
+
+    def add_cut(self, arr, cut):
         '''
         add_cut(self,arr, cut)
                      |    |
@@ -541,19 +493,9 @@ class SetCuts():
         description above for how the analysis script should be formatted. 
         '''
 
-        arr_cut = arr  
-        applycut = "arr_cut["
-        inputDict = self.cutDict
-        subDict = inputDict[cut]
-        for i,(key,val) in enumerate(subDict.items()):
-            if i == len(subDict)-1:
-                applycut += 'self.cut("%s","%s")]' % (key,cut)
-            else:
-                applycut += 'self.cut("%s","%s") & ' % (key,cut)
-        arr_cut = eval(applycut)        
-        return arr_cut
+        return eval(self.apply_cut(arr, cut))
 
-    def cut(self,key,cut=None):
+    def cut(self,key,cut):
         '''
         cut(self,key,cut=None)
                  |   |
@@ -566,11 +508,7 @@ class SetCuts():
         grabs the properly formated dictionary (from class pyDict) and outputs arrays with cut.
         '''
 
-        if cut:
-            inputDict = self.cutDict
-            subDict = inputDict[cut]
-            value = subDict.get(key,"Leaf name not found")
-            return value
-        # Just for old version for applying cut (i.e. applyCuts() method...depreciated)
-        else:
-            return self.cutDict.get(key,"Leaf name not found")
+        inputDict = self.cutDict
+        subDict = inputDict[cut]
+        value = subDict.get(key,"Leaf name not found")
+        return value

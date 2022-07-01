@@ -2,7 +2,7 @@
 # Description: This package will perform many tasks required for l-t separation physics analysis 
 # Analysis script required dynamically defining pathing.
 # ================================================================
-# Time-stamp: "2021-11-05 03:58:00 trottar"
+# Time-stamp: "2022-06-30 02:24:22 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
@@ -11,6 +11,13 @@
 #
 from pathlib import Path
 import sys,os,glob
+
+class InvalidPath(Exception):
+    '''
+    Raise this exception when something goes wrong with the pathing
+    '''
+    pass
+
 
 class SetPath():
     '''
@@ -24,23 +31,26 @@ class SetPath():
     \'''
 
     import os
-    import ltsep as lt
+    from ltsep import Root
 
-    # os.path.realpath(__file__) is your current directory path
-    # This will grab the pathing for these variables based off the files in PATH_TO_DIR
-    HCANAPATH=lt.SetPath(os.path.realpath(__file__)).getPath("HCANAPATH")
-    REPLAYPATH=lt.SetPath(os.path.realpath(__file__)).getPath("REPLAYPATH")
-    UTILPATH=lt.SetPath(os.path.realpath(__file__)).getPath("UTILPATH")
-    PACKAGEPATH=lt.SetPath(os.path.realpath(__file__)).getPath("PACKAGEPATH")
-    OUTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("OUTPATH")
-    ROOTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("ROOTPATH")
-    REPORTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("REPORTPATH")
-    CUTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("CUTPATH")
-    PARAMPATH=lt.SetPath(os.path.realpath(__file__)).getPath("PARAMPATH")
-    SCRIPTPATH=lt.SetPath(os.path.realpath(__file__)).getPath("SCRIPTPATH")
-    ANATYPE=lt.SetPath(os.path.realpath(__file__)).getPath("ANATYPE")
-    USER=lt.SetPath(os.path.realpath(__file__)).getPath("USER")
-    HOST=lt.SetPath(os.path.realpath(__file__)).getPath("HOST")
+    lt=Root(os.path.realpath(__file__))
+
+    VOLATILEPATH=lt.VOLATILEPATH
+    ANALYSISPATH=lt.ANALYSISPATH
+    HCANAPATH=lt.HCANAPATH
+    REPLAYPATH=lt.REPLAYPATH
+    UTILPATH=lt.UTILPATH
+    PACKAGEPATH=lt.PACKAGEPATH
+    OUTPATH=lt.OUTPATH
+    ROOTPATH=lt.ROOTPATH
+    REPORTPATH=lt.REPORTPATH
+    CUTPATH=lt.CUTPATH
+    PARAMPATH=lt.PARAMPATH
+    SCRIPTPATH=lt.SCRIPTPATH
+    SIMCPATH=lt.SIMCPATH
+    ANATYPE=lt.ANATYPE
+    USER=lt.USER
+    HOST=lt.HOST
 
     ################################################################################################################################################
 
@@ -72,13 +82,34 @@ class SetPath():
 
         ----------------------------------------------------------------------------------------------
 
-        Initialization of class takes the current enviroment path as input
+        Constructor of class takes the current enviroment path as input
         '''
 
-        CURRENT_ENV = CURRENT_ENV.replace(os.getlogin(),"${USER}") # Replace username with general ${USER} so it can be used broadly
         CURRENT_ENV = CURRENT_ENV.split("/UTIL_",1)[0] # Redefine path to hallc_replay_lt (if in replay env)
         CURRENT_ENV = CURRENT_ENV.split("/cut.py",1)[0] # Redefine path to ltsep (if in package env)
         self.CURRENT_ENV = CURRENT_ENV
+
+    def __str__(self):
+        '''
+        __str__(self)
+
+        ----------------------------------------------------------------------------------------------
+
+        String representation of class if called as string (eg print(SetPath))
+        '''
+
+        return "CURRENT_ENV : {self.CURRENT_ENV}"
+
+    def __repr__(self):
+        '''
+        __repr__(self)
+
+        ----------------------------------------------------------------------------------------------
+
+        String representation of class if called as is (eg SetPath)
+        '''
+
+        return "SetCuts({self.CURRENT_ENV})"
 
     def getPath(self,inp_dir,DEBUG=False):
         '''
@@ -95,11 +126,26 @@ class SetPath():
         # Grab location of package (either in .local or in the UTIL dir)
         PACKAGE_ENV = os.path.dirname(os.path.realpath(__file__))
 
-        # Grab username and hostname
-        USER = os.getlogin()
+        # If python package in user dir, then get username from string
+        # This is required for batch jobs to run properly (in practice amounts to the same as os.getlogin())
+        if "local" in PACKAGE_ENV:
+            USER = PACKAGE_ENV.split("/.local")[0]
+            USER = USER.split("home/")[1]
+        else:
+            USER = os.getlogin()
+
+        # Grab hostname
         HOST = os.uname()[1]
 
+        # Removes /u/ which might be depreciated??
+        self.CURRENT_ENV = self.CURRENT_ENV.replace(USER,"${USER}").replace("/u","")
+
+        # Replace username with general ${USER} so it can be used broadly
+        if "${USER}" in self.CURRENT_ENV:
+            self.CURRENT_ENV = self.CURRENT_ENV.split("/${USER}")[0]+"/${USER}"
+
         if DEBUG==True:
+            print("USER ",USER)
             print("CURRENT_ENV ",self.CURRENT_ENV)
 
         # Setup path to pathing files (see PATH_TO_DIR)
@@ -118,8 +164,13 @@ class SetPath():
         try:
             PATHFILE
         except NameError:
-            print("ERROR: PATHFILE not defined. Invalid enviroment...\n\t{}".format(self.CURRENT_ENV))
-            sys.exit(1)
+            raise InvalidPath('''
+            ======================================================================
+              ERROR: PATHFILE not defined. 
+              Invalid enviroment...
+              {}
+            ======================================================================
+            '''.format(self.CURRENT_ENV))
 
         # Open pathing file then create a pathing dictionary based off the contents
         inp_path = open(PATHFILE)
@@ -157,7 +208,7 @@ class SetPath():
                 print ("{} exists but is not a directory or sym link, check your directory/link and try again".format(inp_dir))
                 sys.exit(2)
         else:
-            print("Output path not found, please make a sym link or directory called OUTPUT in {} to store output").format(UTILPATH.replace(REPLAYPATH+"/",""))
+            print("ERROR: Path {} not found, please make sure the the sym link or directory naming conventions are consistent with ltsep package setup".format(inp_dir))
             sys.exit(3)
 
     def checkFile(self,inp_file):
