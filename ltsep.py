@@ -2,7 +2,7 @@
 #
 # Description:
 # ================================================================
-# Time-stamp: "2022-08-13 10:34:50 trottar"
+# Time-stamp: "2023-01-14 12:59:38 trottar"
 # ================================================================
 #
 # Author:  Richard L. Trotta III <trotta@cua.edu>
@@ -57,6 +57,7 @@ class Root():
     PARAMPATH=lt.PARAMPATH
     SCRIPTPATH=lt.SCRIPTPATH
     SIMCPATH=lt.SIMCPATH
+    LTANAPATH=lt.LTANAPATH
     ANATYPE=lt.ANATYPE
     USER=lt.USER
     HOST=lt.HOST
@@ -92,6 +93,7 @@ class Root():
     PARAMPATH=lt.PARAMPATH
     SCRIPTPATH=lt.SCRIPTPATH
     SIMCPATH=lt.SIMCPATH
+    LTANAPATH=lt.LTANAPATH
     ANATYPE=lt.ANATYPE
     USER=lt.USER
     HOST=lt.HOST
@@ -128,6 +130,7 @@ class Root():
     PARAMPATH=lt.PARAMPATH
     SCRIPTPATH=lt.SCRIPTPATH
     SIMCPATH=lt.SIMCPATH
+    LTANAPATH=lt.LTANAPATH
     ANATYPE=lt.ANATYPE
     USER=lt.USER
     HOST=lt.HOST
@@ -174,6 +177,7 @@ class Root():
     PARAMPATH=lt.PARAMPATH
     SCRIPTPATH=lt.SCRIPTPATH
     SIMCPATH=lt.SIMCPATH
+    LTANAPATH=lt.LTANAPATH
     ANATYPE=lt.ANATYPE
     USER=lt.USER
     HOST=lt.HOST
@@ -252,6 +256,7 @@ class Root():
         self.PARAMPATH=SetPath(self.CURRENT_ENV).getPath("PARAMPATH")
         self.SCRIPTPATH=SetPath(self.CURRENT_ENV).getPath("SCRIPTPATH")
         self.SIMCPATH=SetPath(self.CURRENT_ENV).getPath("SIMCPATH")
+        self.LTANAPATH=SetPath(self.CURRENT_ENV).getPath("LTANAPATH")
         self.ANATYPE=SetPath(self.CURRENT_ENV).getPath("ANATYPE")
         self.USER=SetPath(self.CURRENT_ENV).getPath("USER")
         self.HOST=SetPath(self.CURRENT_ENV).getPath("HOST",self.DEBUG)
@@ -267,7 +272,7 @@ class Root():
         if "HeeP" in self.runType:
             self.OUTPATH = "%s/OUTPUT/Analysis/HeeP" % self.UTILPATH      # Output folder location
         elif "Simc" in self.runType:
-            self.OUTPATH = "%s/OUTPUT/Analysis/HeeP" % self.SIMCPATH      # Output folder location
+            self.OUTPATH = "%s/OUTPUT/Analysis/HeeP" % self.LTANAPATH      # Output folder location
         elif "Prod" in self.runType:
             self.OUTPATH = "%s/OUTPUT/Analysis/%sLT" % (self.UTILPATH,self.ANATYPE)      # Output folder location
         elif "HGCer" in self.runType:
@@ -512,9 +517,6 @@ class Root():
             if branch == "H_dc_2v2_nhit":
                 H_dc_2v2_nhit = e_tree.array("H.dc.2v2.nhit")
                 treeDict.update({"H_dc_2v2_nhit" : H_dc_2v2_nhit})
-            if branch == "H_cal_etottracknorm":
-                H_cal_etottracknorm = e_tree.array("H.cal.etottracknorm")
-                treeDict.update({"H_cal_etottracknorm" : H_cal_etottracknorm})
 
             # SHMS info
             if branch == "P_cal_fly_earray":
@@ -685,9 +687,17 @@ class Root():
             if branch == "P_dc_2v2_nhit":
                 P_dc_2v2_nhit = e_tree.array("P.dc.2v2.nhit")
                 treeDict.update({"P_dc_2v2_nhit" : P_dc_2v2_nhit})
-            if branch == "P_cal_etottracknorm":
-                P_cal_etottracknorm = e_tree.array("P.cal.etottracknorm")
-                treeDict.update({"P_cal_etottracknorm" : P_cal_etottracknorm})
+
+            # Raster
+            if branch == "raster_x":
+                raster_x = e_tree.array("P.rb.x")
+                treeDict.update({"raster_x" : raster_x})
+            if branch == "raster_y":
+                raster_y = e_tree.array("P.rb.y")
+                treeDict.update({"raster_y" : raster_y})
+            if branch == "raster_z":
+                raster_z = e_tree.array("P.rb.z")
+                treeDict.update({"raster_z" : raster_z})
                 
             # Kinematic quantitites
             if branch == "Q2":
@@ -702,6 +712,15 @@ class Root():
             if branch == "ph_q":
                 ph_q = e_tree.array("P.kin.secondary.ph_xq")     
                 treeDict.update({"ph_q" : ph_q})
+            if branch == "ph_recoil":
+                ph_recoil = e_tree.array("P.kin.secondary.ph_bq")     
+                treeDict.update({"ph_recoil" : ph_recoil})
+            if branch == "th_q":
+                th_q = e_tree.array("P.kin.secondary.th_xq")     
+                treeDict.update({"th_q" : th_q})
+            if branch == "th_recoil":
+                th_recoil = e_tree.array("P.kin.secondary.th_bq")     
+                treeDict.update({"th_recoil" : th_recoil})
             if branch == "emiss":
                 emiss = e_tree.array("P.kin.secondary.emiss")    
                 treeDict.update({"emiss" : emiss})
@@ -882,9 +901,6 @@ class Root():
                 treeDict.update({"T_coin_pEDTM_tdcTime" : T_coin_pEDTM_tdcTime})
                 
             # Misc quantities
-            if branch == "fEvtType":
-                fEvtType = e_tree.array("fEvtHdr.fEvtType")     
-                treeDict.update({"fEvtType" : fEvtType})
             if branch == "RFFreq":
                 RFFreq = e_tree.array("MOFC1FREQ")  
                 treeDict.update({"RFFreq" : RFFreq})
